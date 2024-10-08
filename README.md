@@ -45,7 +45,7 @@ Start Laravel Sail, which is a Docker environment for running Laravel projects:
 ./vendor/bin/sail up
 ```
 
-This will start the necessary services, including the web server, database, Redis, and Mailpit.
+This will start the necessary services, including the web server, database and Mailpit.
 
 ### Step 5: Migrate the Database
 
@@ -64,11 +64,11 @@ WEATHER_API_KEY={API KEY}
 WEATHER_API_URL=http://api.weatherapi.com/v1/current.json
 ```
 
-### Step 7: Set Up and Run the Queue Worker
+### Step 7: Set Up and Run the Queue Worker and Scheduler
 
 To enable background job processing, such as sending a welcome email when a user registers, you need to set up the queue worker:
 
-1. Ensure Redis is running (it should be started by Sail).
+1. Ensure database is running (it should be started by Sail).
 2. Run the queue worker with the following command:
 
 ```bash
@@ -77,6 +77,12 @@ To enable background job processing, such as sending a welcome email when a user
 
 This command will listen for jobs and process them in the background.
 
+To run the scheduler for fetching the weather data periodically (every 1 hour):
+```bash
+./vendor/bin/sail artisan schedule:work
+```
+which can be set up with Supervisor in production environtment.
+
 ### Step 8: Run the Artisan Command to Manually Dispatch Welcome Email
 
 You can manually trigger the welcome email job using an artisan command. Run the following command to dispatch the job:
@@ -84,6 +90,11 @@ You can manually trigger the welcome email job using an artisan command. Run the
 ```bash
 ./vendor/bin/sail artisan email:send-welcome {userId}
 ```
+then 
+```bash
+./vendor/bin/sail artisan queue:work
+```
+to actually trigger it.
 
 Replace `{userId}` with the actual ID of the user for whom you want to send the email.
 
@@ -140,6 +151,17 @@ This will run all unit and feature tests, including those for API endpoints and 
   ./vendor/bin/sail artisan migrate
   ```
 
+- To create a migration for the queue jobs db table 
+(in case running only ```artisan migrate``` does not work):
+
+  ```bash
+  ./vendor/bin/sail artisan queue:table
+  ```
+  then
+  ```bash
+  ./vendor/bin/sail artisan migrate
+  ```
+
 - To clear cache:
 
   ```bash
@@ -154,4 +176,4 @@ This will run all unit and feature tests, including those for API endpoints and 
 
 ## Conclusion
 
-This setup provides a full Laravel development environment with Docker, along with queue workers for background jobs, Mailpit for email testing, and Swagger for API documentation. Enjoy building your application!
+This setup provides a full Laravel development environment with Docker, along with queue workers for background jobs, Mailpit for email testing, and Swagger for API documentation. Wish me luck !
