@@ -1,66 +1,157 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Laravel API with WeatherAPI Integration and Queue System
 
-## About Laravel
+This is a Laravel project that includes a basic API for user management, posts, weather data integration using WeatherAPI, and a queued job to send a welcome email when a user registers. The application is set up with **Laravel Sail** for easy development with Docker.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## Prerequisites
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- Docker (for Laravel Sail)
+- Laravel Sail (development environment)
+- Composer (for installing PHP dependencies)
+- WeatherAPI account for weather data
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+## Setup Instructions
 
-## Learning Laravel
+### Step 1: Clone the Repository
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Clone the repository to your local machine:
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+```bash
+git clone https://github.com/your-repo.git
+cd your-repo
+```
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Step 2: Install Dependencies
 
-## Laravel Sponsors
+Run the following command to install all dependencies:
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+```bash
+composer install
+```
 
-### Premium Partners
+### Step 3: Configure Environment Variables
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+Copy the example `.env` file and configure it with your API keys and other environment variables:
 
-## Contributing
+```bash
+cp .env.example .env
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+### Step 4: Start the Development Server
 
-## Code of Conduct
+Start Laravel Sail, which is a Docker environment for running Laravel projects:
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+```bash
+./vendor/bin/sail up
+```
 
-## Security Vulnerabilities
+This will start the necessary services, including the web server, database, Redis, and Mailpit.
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+### Step 5: Migrate the Database
 
-## License
+Run the following command to create the necessary database tables:
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+```bash
+./vendor/bin/sail artisan migrate
+```
+
+### Step 6: Set Up WeatherAPI
+
+Make sure to sign up for an account at [WeatherAPI](https://www.weatherapi.com/) and retrieve your API key. Add this API key to your `.env` file:
+
+```env
+WEATHER_API_KEY={API KEY}
+WEATHER_API_URL=http://api.weatherapi.com/v1/current.json
+```
+
+### Step 7: Set Up and Run the Queue Worker
+
+To enable background job processing, such as sending a welcome email when a user registers, you need to set up the queue worker:
+
+1. Ensure Redis is running (it should be started by Sail).
+2. Run the queue worker with the following command:
+
+```bash
+./vendor/bin/sail artisan queue:work
+```
+
+This command will listen for jobs and process them in the background.
+
+### Step 8: Run the Artisan Command to Manually Dispatch Welcome Email
+
+You can manually trigger the welcome email job using an artisan command. Run the following command to dispatch the job:
+
+```bash
+./vendor/bin/sail artisan email:send-welcome {userId}
+```
+
+Replace `{userId}` with the actual ID of the user for whom you want to send the email.
+
+### Step 9: View Sent Emails with Mailpit
+
+By default, **Mailpit** (a local email testing tool) is installed and running on `localhost:8025` in Laravel Sail. To view emails sent by the application:
+
+1. Go to [http://localhost:8025](http://localhost:8025) in your browser.
+2. You will be able to see the emails, including the welcome email, that have been sent by the application.
+
+### Step 10: Access the API Documentation
+
+Swagger API documentation is available at `/api/documentation`. After running the server, visit:
+
+```
+http://localhost/api/documentation
+```
+
+This will show the OpenAPI documentation for all the available endpoints.
+
+## Available Endpoints
+
+1. **User Management**
+    - `POST /api/register`: Register a new user
+    - `POST /api/login`: Login a user
+    - `POST /api/logout`: Logout a user
+    - `GET /api/users/{id}`: Get a specific user (Requires authentication)
+
+2. **Posts**
+    - `GET /api/posts`: List all posts (Requires authentication)
+    - `GET /api/posts/{id}`: Get a specific post (Requires authentication)
+    - `POST /api/posts`: Create a new post (Requires authentication)
+    - `PATCH /api/posts/{id}`: Update a post (Requires authentication)
+    - `DELETE /api/posts/{id}`: Delete a post (Requires authentication)
+
+3. **Weather**
+    - `GET /api/weather`: Get current weather data for Perth, Australia
+
+### Step 11: Testing
+
+You can run the tests using Laravel's testing tools. To run the tests:
+
+```bash
+./vendor/bin/sail artisan test
+```
+
+This will run all unit and feature tests, including those for API endpoints and job dispatching.
+
+## Additional Commands
+
+- To run database migrations:
+
+  ```bash
+  ./vendor/bin/sail artisan migrate
+  ```
+
+- To clear cache:
+
+  ```bash
+  ./vendor/bin/sail artisan cache:clear
+  ```
+
+- To stop the Sail services:
+
+  ```bash
+  ./vendor/bin/sail down
+  ```
+
+## Conclusion
+
+This setup provides a full Laravel development environment with Docker, along with queue workers for background jobs, Mailpit for email testing, and Swagger for API documentation. Enjoy building your application!
